@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Flutter
+flutter_package/psc_update_service/.dart_tool/
+flutter_package/psc_update_service/build/
+flutter_package/psc_update_service/.packages
+flutter_package/psc_update_service/pubspec.lock
+
+# OS
+.DS_Store

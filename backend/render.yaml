@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: psc-update-api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    healthCheckPath: /
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DOCS_ENABLED
+        value: "false"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "480"
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: FCM_PROJECT_ID
+        sync: false
+      - key: FCM_CREDENTIALS_JSON
+        sync: false
+      - key: UPDATE_CHECK_RATE_LIMIT
+        value: 60/minute
