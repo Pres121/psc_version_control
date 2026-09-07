@@ -29,9 +29,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 8  # 8 hours
 
     # --- CORS ---
-    ALLOWED_ORIGINS: List[str] = ["*"]
+    # Typed as Union[str, List[str]] so pydantic_settings doesn't fail json.loads() in EnvSettingsSource
+    ALLOWED_ORIGINS: Union[str, List[str]] = ["*"]
 
-    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @field_validator("ALLOWED_ORIGINS", mode="after")
     @classmethod
     def parse_allowed_origins(cls, v: Union[str, List[str]]) -> List[str]:
         if isinstance(v, str):
