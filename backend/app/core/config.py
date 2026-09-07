@@ -3,9 +3,11 @@ Centralized application configuration.
 All values are loaded from environment variables (see .env.example).
 Never hard-code secrets here.
 """
+import json
 from functools import lru_cache
-from typing import List
+from typing import List, Union
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -28,6 +30,21 @@ class Settings(BaseSettings):
 
     # --- CORS ---
     ALLOWED_ORIGINS: List[str] = ["*"]
+
+    @field_validator("ALLOWED_ORIGINS", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                return ["*"]
+            if v.startswith("[") and v.endswith("]"):
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
 
     # --- FCM ---
     FCM_PROJECT_ID: str | None = None
