@@ -16,7 +16,7 @@ class ReleaseBase(BaseModel):
     release_notes: list[str] = Field(default_factory=list)
     minimum_supported_version: str = Field(..., min_length=1, max_length=50)
     is_mandatory: bool = False
-    update_url: str
+    update_url: str | None = None
     is_published: bool = False
     release_date: datetime | None = None
 

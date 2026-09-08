@@ -35,7 +35,7 @@ create table if not exists releases (
     release_notes text[],
     minimum_supported_version text not null,
     is_mandatory boolean not null default false,
-    update_url text not null,
+    update_url text,
     is_published boolean not null default false,
     release_date timestamptz,
     created_at timestamptz not null default now(),

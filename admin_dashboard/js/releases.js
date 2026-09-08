@@ -51,8 +51,16 @@ async function loadReleases() {
           `Publish ${app} ${version}? This makes it visible to all client apps immediately.`
         );
         if (!confirmed) return;
-        await Api.publishRelease(btn.getAttribute("data-publish"));
-        loadReleases();
+        btn.disabled = true;
+        btn.textContent = "Publishing…";
+        try {
+          await Api.publishRelease(btn.getAttribute("data-publish"));
+          loadReleases();
+        } catch (err) {
+          showReleaseMessage("error", `Could not publish this release: ${err.message}`);
+          btn.disabled = false;
+          btn.textContent = "Publish";
+        }
       });
     });
   } catch (err) {
@@ -64,7 +72,9 @@ async function loadReleases() {
 document.getElementById("release-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const errorEl = document.getElementById("error");
+  const successEl = document.getElementById("success");
   errorEl.style.display = "none";
+  successEl.style.display = "none";
 
   const notes = document
     .getElementById("release_notes")
@@ -82,16 +92,24 @@ document.getElementById("release-form").addEventListener("submit", async (e) => 
       release_notes: notes,
       minimum_supported_version: document.getElementById("minimum_supported_version").value,
       is_mandatory: document.getElementById("is_mandatory").checked,
-      update_url: document.getElementById("update_url").value,
+      update_url: document.getElementById("update_url").value.trim() || null,
       is_published: false,
     });
     document.getElementById("release-form").reset();
     loadReleases();
+    showReleaseMessage("success", "Draft release created. Review it in Release History, then publish when ready.");
   } catch (err) {
-    errorEl.textContent = err.message;
-    errorEl.style.display = "block";
+    showReleaseMessage("error", err.message);
   }
 });
+
+function showReleaseMessage(type, message) {
+  const element = document.getElementById(type === "success" ? "success" : "error");
+  const other = document.getElementById(type === "success" ? "error" : "success");
+  other.style.display = "none";
+  element.textContent = message;
+  element.style.display = "block";
+}
 
 (async () => {
   await loadApps();

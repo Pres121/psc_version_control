@@ -20,7 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:psc_update_service/psc_update_service.dart';
 
 void main() {
-  PscUpdateService.configure(baseUrl: 'https://psc-update-api.onrender.com');
+  PscUpdateService.configure(baseUrl: 'https://psc-version-control.onrender.com');
   runApp(const MyApp());
 }
 

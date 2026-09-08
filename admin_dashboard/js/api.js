@@ -3,7 +3,7 @@
 // touches Supabase directly and never holds a service-role key -
 // everything is proxied through FastAPI using a short-lived JWT.
 
-const API_BASE = window.PSC_API_BASE || "http://localhost:8000/api/v1";
+const API_BASE = window.PSC_API_BASE || "https://psc-version-control.onrender.com/api/v1";
 
 function getToken() {
   return localStorage.getItem("psc_admin_token");
@@ -36,11 +36,38 @@ async function apiRequest(path, { method = "GET", body } = {}) {
 
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw new Error(data.detail || `Request failed (${res.status})`);
+    throw new Error(formatApiError(data, res.status));
   }
 
   if (res.status === 204) return null;
   return res.json();
+}
+
+// FastAPI returns validation failures as an array of objects.  Converting that
+// array directly to text produces "[object Object]", which gives admins no
+// useful indication of what needs correcting.
+function formatApiError(data, status) {
+  const detail = data?.detail;
+  if (typeof detail === "string" && detail.trim()) return detail;
+
+  if (Array.isArray(detail)) {
+    const messages = detail
+      .map((issue) => {
+        if (typeof issue === "string") return issue;
+        if (!issue || typeof issue !== "object") return null;
+        const field = Array.isArray(issue.loc)
+          ? issue.loc.filter((part) => part !== "body").join(" → ")
+          : "";
+        return field ? `${field}: ${issue.msg || "Invalid value"}` : issue.msg;
+      })
+      .filter(Boolean);
+    if (messages.length) return messages.join(". ");
+  }
+
+  if (detail && typeof detail === "object") {
+    return detail.message || detail.error || `Request failed (${status})`;
+  }
+  return data?.message || `Request failed (${status})`;
 }
 
 const Api = {

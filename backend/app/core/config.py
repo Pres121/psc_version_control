@@ -19,12 +19,12 @@ class Settings(BaseSettings):
     DOCS_ENABLED: bool = True
 
     # --- Supabase / Postgres ---
-    SUPABASE_URL: str
-    SUPABASE_KEY: str  # service_role key - server-side only, never sent to clients
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""  # service_role key - server-side only, never sent to clients
     DATABASE_URL: str | None = None
 
     # --- Auth ---
-    SECRET_KEY: str
+    SECRET_KEY: str = "default-insecure-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 8  # 8 hours
 

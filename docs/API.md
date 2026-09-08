@@ -1,6 +1,6 @@
 # API Reference
 
-Base URL: `{API_BASE}/api/v1` (e.g. `https://psc-update-api.onrender.com/api/v1`)
+Base URL: `{API_BASE}/api/v1` (e.g. `https://psc-version-control.onrender.com/api/v1`)
 
 Full interactive docs are also available at `/docs` (Swagger) and
 `/redoc` when `DOCS_ENABLED=true`.

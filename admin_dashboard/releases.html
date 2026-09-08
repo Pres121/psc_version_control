@@ -14,10 +14,8 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <a href="index.html" class="brand">
-        <div class="brand-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        </div>
-        <div class="brand-text">PSC <span>Manager</span></div>
+        <img class="brand-logo" src="assets/psc-logo.png" alt="PSC" />
+        <div class="brand-text">Update <span>Hub</span></div>
       </a>
       <button class="close-btn" id="close-sidebar" aria-label="Close menu">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -130,8 +128,9 @@
             </div>
 
             <div class="form-group">
-              <label for="update_url">Update Store URL</label>
-              <input id="update_url" required placeholder="https://play.google.com/store/apps/details?id=..." />
+              <label for="update_url">Google Play Store URL <span class="field-optional">Optional</span></label>
+              <input id="update_url" type="url" placeholder="https://play.google.com/store/apps/details?id=..." />
+              <p class="field-hint">Leave blank when the app is distributed outside Google Play.</p>
             </div>
           </div>
 
@@ -143,6 +142,7 @@
           </div>
 
           <div class="error" id="error" style="display:none"></div>
+          <div class="success" id="success" style="display:none" role="status"></div>
 
           <div style="margin-top: 6px;">
             <button class="primary" type="submit">
