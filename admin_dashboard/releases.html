@@ -61,6 +61,37 @@
     </div>
   </aside>
 
+  <dialog class="verification-dialog" id="release-action-dialog" aria-labelledby="action-dialog-title">
+    <form id="release-action-form" method="dialog">
+      <div class="dialog-header">
+        <div><p class="eyebrow">Confirmation required</p><h2 id="action-dialog-title">Verify release action</h2></div>
+        <button class="dialog-close" type="button" data-close-dialog aria-label="Close">×</button>
+      </div>
+      <p id="action-dialog-description" class="dialog-description"></p>
+      <div class="verification-callout">Enter the <strong>current</strong> app key and release version exactly as shown in the table.</div>
+      <div class="release-grid">
+        <div class="form-group"><label for="verify_app_key">App key</label><input id="verify_app_key" required autocomplete="off" placeholder="psc_notes" /></div>
+        <div class="form-group"><label for="verify_version">Current release version</label><input id="verify_version" required autocomplete="off" placeholder="1.1.0" /></div>
+      </div>
+      <div id="edit-release-fields" hidden>
+        <div class="dialog-divider"></div><h3>Edit release details</h3>
+        <div class="release-grid">
+          <div class="form-group"><label for="edit_version">New version</label><input id="edit_version" required placeholder="1.1.0" /></div>
+          <div class="form-group"><label for="edit_build_number">New build number</label><input id="edit_build_number" type="number" min="1" required /></div>
+        </div>
+        <div class="form-group"><label for="edit_release_title">Release title</label><input id="edit_release_title" /></div>
+        <div class="form-group"><label for="edit_release_notes">Release notes (one per line)</label><textarea id="edit_release_notes" rows="3"></textarea></div>
+        <div class="release-grid">
+          <div class="form-group"><label for="edit_minimum_supported_version">Minimum supported version</label><input id="edit_minimum_supported_version" required /></div>
+          <div class="form-group"><label for="edit_update_url">Google Play Store URL <span class="field-optional">Optional</span></label><input id="edit_update_url" type="url" /></div>
+        </div>
+        <label class="checkbox-label"><input type="checkbox" id="edit_is_mandatory" /> <span>Mandatory update</span></label>
+      </div>
+      <div class="error" id="action-error" style="display:none"></div>
+      <div class="dialog-actions"><button class="secondary" type="button" data-close-dialog>Cancel</button><button class="primary" type="submit" id="action-submit">Confirm</button></div>
+    </form>
+  </dialog>
+
   <!-- App Wrapper -->
   <div class="app-wrapper">
     <!-- Topbar Header -->
@@ -84,9 +115,20 @@
     <!-- Main Content -->
     <main>
       <div class="card">
-        <h3>Create New Release (Draft)</h3>
-        <form id="release-form">
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+        <div class="release-card-heading">
+          <div>
+            <p class="eyebrow">Controlled delivery</p>
+            <h3>Create a release draft</h3>
+            <p>Versions and build numbers move forward only, keeping every app’s release history dependable.</p>
+          </div>
+          <div class="version-guide" aria-label="Versioning guide">
+            <strong>Version guide</strong>
+            <span><code>MAJOR.MINOR.PATCH</code></span>
+            <small>2.0.0 breaking · 1.1.0 feature · 1.0.1 fix</small>
+          </div>
+        </div>
+        <form id="release-form" class="release-form">
+          <div class="release-grid release-grid-four">
             <div class="form-group">
               <label for="application_id">Target Application</label>
               <select id="application_id" required></select>
@@ -102,13 +144,18 @@
 
             <div class="form-group">
               <label for="version">Version Number</label>
-              <input id="version" required placeholder="1.4.0" />
+              <input id="version" required inputmode="decimal" autocomplete="off" placeholder="1.4.0" aria-describedby="version-guidance" />
             </div>
 
             <div class="form-group">
               <label for="build_number">Build Number</label>
-              <input id="build_number" type="number" required placeholder="14" />
+              <input id="build_number" type="number" min="1" step="1" required placeholder="14" aria-describedby="build-guidance" />
             </div>
+          </div>
+
+          <div class="release-validation" id="release-validation" role="status" aria-live="polite">
+            <span id="version-guidance">Choose a target application and platform to see its latest release.</span>
+            <span id="build-guidance"></span>
           </div>
 
           <div class="form-group">
@@ -121,7 +168,7 @@
             <textarea id="release_notes" rows="3" placeholder="Added dark mode support&#10;Enhanced network sync reliability&#10;Fixed rare crash on startup"></textarea>
           </div>
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+          <div class="release-grid">
             <div class="form-group">
               <label for="minimum_supported_version">Minimum Supported Version</label>
               <input id="minimum_supported_version" required placeholder="1.2.0" />

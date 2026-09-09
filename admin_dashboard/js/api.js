@@ -85,7 +85,10 @@ const Api = {
     return apiRequest(`/releases${qs ? `?${qs}` : ""}`);
   },
   createRelease: (payload) => apiRequest("/releases", { method: "POST", body: payload }),
-  publishRelease: (id) => apiRequest(`/releases/${id}/publish`, { method: "POST" }),
+  updateRelease: (id, payload) => apiRequest(`/releases/${id}`, { method: "PATCH", body: payload }),
+  publishRelease: (id, verification) => apiRequest(`/releases/${id}/publish`, { method: "POST", body: verification }),
+  unpublishRelease: (id, verification) => apiRequest(`/releases/${id}/unpublish`, { method: "POST", body: verification }),
+  deleteRelease: (id, verification) => apiRequest(`/releases/${id}`, { method: "DELETE", body: verification }),
 
   sendNotification: (payload) =>
     apiRequest("/notifications/send", { method: "POST", body: payload }),

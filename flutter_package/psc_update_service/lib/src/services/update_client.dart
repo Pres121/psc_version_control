@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,6 +45,7 @@ class PscUpdateClient {
           .timeout(timeout);
 
       if (response.statusCode != 200) {
+        _debugLog('Update check failed with HTTP ${response.statusCode}.');
         return await _fallbackToCache();
       }
 
@@ -51,7 +53,8 @@ class PscUpdateClient {
       final info = PscUpdateInfo.fromJson(data);
       await _cacheResult(info);
       return info;
-    } catch (_) {
+    } catch (error) {
+      _debugLog('Update check could not complete: $error');
       // Network unavailable, timeout, DNS failure, malformed response, etc.
       // Never let an update check crash or block the host app.
       return await _fallbackToCache();
@@ -81,5 +84,14 @@ class PscUpdateClient {
       // Ignore cache read errors too.
     }
     return PscUpdateInfo.none();
+  }
+
+  void _debugLog(String message) {
+    // The production behavior remains offline-safe, but debug builds expose
+    // enough information to identify an incorrect URL or unavailable API.
+    assert(() {
+      debugPrint('[PSC Update] $message');
+      return true;
+    }());
   }
 }

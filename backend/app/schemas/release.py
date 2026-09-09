@@ -33,6 +33,8 @@ class ReleaseCreate(ReleaseBase):
 
 
 class ReleaseUpdate(BaseModel):
+    version: str | None = Field(default=None, min_length=1, max_length=50)
+    build_number: int | None = Field(default=None, ge=1)
     release_title: str | None = None
     release_notes: list[str] | None = None
     minimum_supported_version: str | None = None
@@ -40,6 +42,22 @@ class ReleaseUpdate(BaseModel):
     update_url: str | None = None
     is_published: bool | None = None
     release_date: datetime | None = None
+
+    @field_validator("version", "minimum_supported_version")
+    @classmethod
+    def validate_optional_semver(cls, v: str | None) -> str | None:
+        if v is not None and not is_valid_semver(v):
+            raise ValueError(f"'{v}' is not a valid semantic version (expected e.g. 1.2.3)")
+        return v
+
+
+class ReleaseVerification(BaseModel):
+    app_key: str = Field(..., min_length=1, max_length=100)
+    verification_version: str = Field(..., min_length=1, max_length=50)
+
+
+class VerifiedReleaseUpdate(ReleaseUpdate, ReleaseVerification):
+    pass
 
 
 class ReleaseOut(ReleaseBase):
