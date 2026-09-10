@@ -96,4 +96,9 @@ const Api = {
     const qs = new URLSearchParams(params).toString();
     return apiRequest(`/notifications/history${qs ? `?${qs}` : ""}`);
   },
+
+  listLogs: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiRequest(`/logs${qs ? `?${qs}` : ""}`);
+  },
 };

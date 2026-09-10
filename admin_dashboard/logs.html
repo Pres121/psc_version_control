@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PSC App Update Manager — Overview</title>
+<title>PSC App Update Manager — Logs</title>
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -25,7 +25,7 @@
     <nav class="sidebar-nav">
       <div class="nav-section-title">Main Menu</div>
       
-      <a href="index.html" class="nav-item active">
+      <a href="index.html" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         <span>Overview</span>
       </a>
@@ -45,7 +45,7 @@
         <span>Notifications</span>
       </a>
 
-      <a href="logs.html" class="nav-item">
+      <a href="logs.html" class="nav-item active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         <span>Logs</span>
       </a>
@@ -68,50 +68,81 @@
 
   <!-- App Wrapper -->
   <div class="app-wrapper">
-    <!-- Topbar Header -->
     <header class="topbar">
       <div class="topbar-left">
         <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation drawer">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
         <div class="page-header">
-          <h1>System Overview</h1>
+          <h1>Client Activity Logs</h1>
         </div>
       </div>
 
       <div class="topbar-right">
         <div class="system-status">
-          <span class="pulse-dot"></span> System Live
+          <span class="pulse-dot"></span> Live request trail
         </div>
       </div>
     </header>
 
-    <!-- Main Content -->
     <main>
-      <section class="dashboard-hero">
-        <div>
-          <p class="eyebrow">Release operations</p>
-          <h2>Keep every PSC app on its best version.</h2>
-          <p>Monitor releases, identify mandatory updates, and publish with confidence from one place.</p>
-        </div>
-        <a class="hero-action" href="releases.html">Create a release <span aria-hidden="true">→</span></a>
-      </section>
-      <div class="grid" id="stats"></div>
+      <div class="card">
+        <h3>Filters</h3>
+        <form id="logs-filters" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; align-items: end;">
+          <div class="form-group" style="margin:0;">
+            <label for="filter-event">Event type</label>
+            <select id="filter-event">
+              <option value="">All events</option>
+              <option value="update_check">Update check</option>
+              <option value="device_register">Device register</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label for="filter-app">Application</label>
+            <select id="filter-app">
+              <option value="">All apps</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label for="filter-ip">IP address</label>
+            <input id="filter-ip" type="text" placeholder="e.g. 102.89.23.11" />
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label for="filter-limit">Limit</label>
+            <select id="filter-limit">
+              <option value="50">50</option>
+              <option value="100" selected>100</option>
+              <option value="250">250</option>
+              <option value="500">500</option>
+            </select>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="primary" type="submit">Apply</button>
+            <button type="button" id="refresh-logs" class="secondary">Refresh</button>
+          </div>
+        </form>
+      </div>
 
       <div class="card">
-        <h3>Applications Overview</h3>
+        <h3>Recent client requests</h3>
+        <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 13px;">
+          Each time a PSC app checks for an update or registers for push notifications, the request IP and version appear here.
+        </p>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
-                <th>App Name</th>
-                <th>Latest Android</th>
-                <th>Latest iOS</th>
-                <th>Status</th>
+                <th>Time</th>
+                <th>Event</th>
+                <th>App</th>
+                <th>Platform</th>
+                <th>Version</th>
+                <th>IP address</th>
+                <th>Result</th>
               </tr>
             </thead>
-            <tbody id="apps-table">
-              <tr><td colspan="4" style="text-align:center; padding: 24px;">Loading applications data…</td></tr>
+            <tbody id="logs-table">
+              <tr><td colspan="7" style="text-align:center; padding: 24px;">Loading logs…</td></tr>
             </tbody>
           </table>
         </div>
@@ -121,6 +152,6 @@
 
   <script src="js/api.js"></script>
   <script src="js/ui.js"></script>
-  <script src="js/dashboard.js"></script>
+  <script src="js/logs.js"></script>
 </body>
 </html>

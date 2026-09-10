@@ -85,3 +85,21 @@ offline-safe behavior.
   brief network blip doesn't drop update visibility entirely.
 - The host app's UI and functionality are never blocked or delayed by
   the update check.
+
+## Push notifications
+
+Release pushes use FCM topics named after each `app_key`. After Firebase
+is set up in the host app, register the device token with PSC:
+
+```dart
+final token = await FirebaseMessaging.instance.getToken();
+if (token != null) {
+  await PscUpdateService.registerForNotifications(
+    appKey: 'psc_notes',
+    fcmToken: token,
+  );
+}
+```
+
+Full setup (permissions, background handler, Android/iOS notes) is in
+[`docs/NOTIFICATIONS.md`](../../docs/NOTIFICATIONS.md).

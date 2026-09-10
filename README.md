@@ -31,9 +31,12 @@ psc-update-system/
 ## Quick start
 
 ### 1. Database
-Run `supabase/migrations/001_init_schema.sql` against your Supabase
-project (SQL Editor, or `supabase db push` / psql). This creates all
-tables, indexes, RLS, and seeds the 4 initial apps.
+Run these SQL migrations against your Supabase project (SQL Editor, or
+`supabase db push` / psql), in order:
+
+1. `supabase/migrations/001_init_schema.sql`
+2. `supabase/migrations/002_make_release_update_url_optional.sql`
+3. `supabase/migrations/003_request_logs.sql` — required for the **Logs** page
 
 ### 2. Backend
 ```bash
@@ -72,4 +75,5 @@ No backend code changes needed:
 2. Add `psc_update_service` to the new app with its own `app_key`.
 3. Create and publish releases for it from the **Releases** page.
 
-See `docs/ARCHITECTURE.md` and `docs/API.md` for more detail.
+See `docs/ARCHITECTURE.md`, `docs/API.md`, and `docs/NOTIFICATIONS.md`
+for more detail (including Flutter FCM snippets).

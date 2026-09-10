@@ -28,7 +28,7 @@ class NotificationLogOut(BaseModel):
 
 
 class DeviceRegisterRequest(BaseModel):
-    app_key: str
-    platform: str
-    fcm_token: str
-    app_version: str | None = None
+    app_key: str = Field(..., min_length=1, max_length=100)
+    platform: str = Field(..., pattern="^(android|ios)$")
+    fcm_token: str = Field(..., min_length=10, max_length=4096)
+    app_version: str | None = Field(None, max_length=50)

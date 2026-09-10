@@ -49,12 +49,27 @@ non-dismissible update dialog.
 ### `POST /notifications/devices/register`
 
 Called by the Flutter update service (or your own FCM setup code) to
-associate a device's FCM token with an app, so it can be included in
-future topic-based notifications.
+associate a device's FCM token with an app. The backend upserts the
+token, refreshes `last_seen_at`, and **subscribes the token to the
+app's `app_key` FCM topic** when FCM credentials are configured.
 
 ```json
 { "app_key": "psc_notes", "platform": "android", "fcm_token": "...", "app_version": "1.3.0" }
 ```
+
+→ `{ "registered": true, "topic": "psc_notes" }`
+
+### Admin activity logs
+
+### `GET /logs?event_type=&app_key=&ip_address=&limit=100`
+
+Requires admin JWT. Returns recent client activity (newest first), including
+the requester IP for update checks and device registrations.
+
+Example row fields: `event_type`, `app_key`, `platform`, `app_version`,
+`build_number`, `ip_address`, `user_agent`, `result`, `metadata`, `created_at`.
+
+`event_type` is one of `update_check` | `device_register`.
 
 ## Admin endpoints (require `Authorization: Bearer <JWT>`)
 
@@ -95,8 +110,12 @@ lower versions, and build numbers that do not increase for that app/platform.
 ### Notifications
 - `POST /notifications/send` — `{ application_id, release_id, title, message }`.
   Fails with 409 if a notification was already sent for that
-  `release_id` (duplicate protection).
+  `release_id` (duplicate protection). Records `targeted_device_count`
+  from registered devices for that app.
 - `GET /notifications/history?application_id=` — notification log
+
+### Logs
+- `GET /logs` — client activity (update checks / device registers) with IP
 
 ## Error format
 

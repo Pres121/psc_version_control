@@ -1,6 +1,7 @@
+from datetime import datetime, timezone
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 from app.auth.dependencies import get_current_admin
 from app.database.supabase_client import get_supabase
@@ -9,7 +10,8 @@ from app.schemas.notification import (
     NotificationLogOut,
     NotificationSendRequest,
 )
-from app.services.notification_service import send_release_notification
+from app.services.log_service import log_request_event
+from app.services.notification_service import send_release_notification, subscribe_token_to_topic
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
@@ -37,22 +39,64 @@ def notification_history(
 
 
 @router.post("/devices/register", status_code=201)
-def register_device(payload: DeviceRegisterRequest):
+def register_device(request: Request, payload: DeviceRegisterRequest):
     """Called by Flutter apps at startup to subscribe a device's FCM token
     to its app's topic. Public endpoint - no admin data is exposed here."""
     supabase = get_supabase()
-    app_res = supabase.table("apps").select("id").eq("app_key", payload.app_key).limit(1).execute()
+    app_res = (
+        supabase.table("apps")
+        .select("id, app_key")
+        .eq("app_key", payload.app_key)
+        .limit(1)
+        .execute()
+    )
     if not app_res.data:
+        log_request_event(
+            event_type="device_register",
+            request=request,
+            app_key=payload.app_key,
+            platform=payload.platform,
+            app_version=payload.app_version,
+            result="unknown_app_key",
+        )
         return {"registered": False, "reason": "unknown app_key"}
 
     application_id = app_res.data[0]["id"]
+    topic = app_res.data[0]["app_key"]
+    now = datetime.now(timezone.utc).isoformat()
+
     supabase.table("devices").upsert(
         {
             "application_id": application_id,
             "platform": payload.platform,
             "fcm_token": payload.fcm_token,
             "app_version": payload.app_version,
+            "last_seen_at": now,
         },
         on_conflict="fcm_token",
     ).execute()
-    return {"registered": True}
+
+    # Server-side topic subscribe so topic broadcasts actually reach the device.
+    topic_subscribed = False
+    subscribe_error: str | None = None
+    try:
+        subscribe_token_to_topic(payload.fcm_token, topic)
+        topic_subscribed = True
+    except Exception as exc:  # noqa: BLE001
+        subscribe_error = str(getattr(exc, "detail", None) or exc)
+
+    log_request_event(
+        event_type="device_register",
+        request=request,
+        application_id=application_id,
+        app_key=payload.app_key,
+        platform=payload.platform,
+        app_version=payload.app_version,
+        result="registered" if topic_subscribed else "registered_topic_pending",
+        metadata={"fcm_topic": topic, "topic_subscribed": topic_subscribed, "subscribe_error": subscribe_error},
+    )
+    return {
+        "registered": True,
+        "topic": topic,
+        "topic_subscribed": topic_subscribed,
+    }

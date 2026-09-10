@@ -45,13 +45,14 @@ async function loadHistory() {
             <td>${h.title}</td>
             <td><code>${h.fcm_topic}</code></td>
             <td><span class="badge ${badgeClass}"><span class="pulse-dot"></span> ${h.status}</span></td>
+            <td>${h.targeted_device_count != null ? h.targeted_device_count : "—"}</td>
             <td>${h.sent_at ? new Date(h.sent_at).toLocaleString() : "—"}</td>
           </tr>`;
       })
       .join("");
   } catch (err) {
     document.getElementById("history-table").innerHTML =
-      `<tr><td colspan="5" style="color:var(--badge-red-text);">Failed to load history: ${err.message}</td></tr>`;
+      `<tr><td colspan="6" style="color:var(--badge-red-text);">Failed to load history: ${err.message}</td></tr>`;
   }
 }
 
