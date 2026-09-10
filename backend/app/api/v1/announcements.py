@@ -13,7 +13,6 @@ from app.schemas.announcement import (
 from app.services.announcement_service import (
     check_announcement,
     create_announcement,
-    deactivate_announcement,
     list_announcements,
 )
 
@@ -25,7 +24,7 @@ router = APIRouter(prefix="/announcements", tags=["announcements"])
 def check_in_app_announcement(
     request: Request, payload: AnnouncementCheckRequest
 ) -> AnnouncementCheckResponse:
-    """Public: Flutter apps poll this on launch for an in-app message."""
+    """Public: Flutter apps poll this on launch for a one-shot in-app message."""
     return check_announcement(payload)
 
 
@@ -33,6 +32,7 @@ def check_in_app_announcement(
 def create_in_app_announcement(
     payload: AnnouncementCreateRequest, admin: dict = Depends(get_current_admin)
 ):
+    """Publish a new one-shot announcement. To send the same text again, create another."""
     return create_announcement(payload)
 
 
@@ -41,10 +41,3 @@ def list_in_app_announcements(
     application_id: UUID | None = None, admin: dict = Depends(get_current_admin)
 ):
     return list_announcements(str(application_id) if application_id else None)
-
-
-@router.post("/{announcement_id}/deactivate", response_model=AnnouncementAdminOut)
-def deactivate_in_app_announcement(
-    announcement_id: UUID, admin: dict = Depends(get_current_admin)
-):
-    return deactivate_announcement(str(announcement_id))

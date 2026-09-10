@@ -108,6 +108,4 @@ const Api = {
     const qs = new URLSearchParams(params).toString();
     return apiRequest(`/announcements${qs ? `?${qs}` : ""}`);
   },
-  deactivateAnnouncement: (id) =>
-    apiRequest(`/announcements/${id}/deactivate`, { method: "POST" }),
 };

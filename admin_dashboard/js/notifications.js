@@ -46,42 +46,26 @@ async function loadAnnouncements() {
     const tbody = document.getElementById("announcements-table");
     if (!rows.length) {
       tbody.innerHTML =
-        `<tr><td colspan="5" style="text-align:center; padding: 24px; color: var(--text-muted);">No in-app announcements yet.</td></tr>`;
+        `<tr><td colspan="4" style="text-align:center; padding: 24px; color: var(--text-muted);">No in-app announcements yet.</td></tr>`;
       return;
     }
     tbody.innerHTML = rows
       .map((row) => {
         const appName = appsById[row.application_id]?.name || row.application_id;
-        const badge = row.is_active
-          ? `<span class="badge sent">active</span>`
-          : `<span class="badge draft">inactive</span>`;
-        const action = row.is_active
-          ? `<button type="button" class="secondary" data-deactivate="${row.id}">Deactivate</button>`
-          : "—";
+        const message = String(row.message || "");
+        const shortMessage = message.length > 80 ? `${message.slice(0, 80)}…` : message;
         return `
           <tr>
             <td style="font-weight:700; color:var(--text-heading);">${escapeHtml(appName)}</td>
             <td>${escapeHtml(row.title)}</td>
-            <td>${badge}</td>
+            <td>${escapeHtml(shortMessage)}</td>
             <td>${row.created_at ? new Date(row.created_at).toLocaleString() : "—"}</td>
-            <td>${action}</td>
           </tr>`;
       })
       .join("");
-
-    tbody.querySelectorAll("[data-deactivate]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        try {
-          await Api.deactivateAnnouncement(btn.getAttribute("data-deactivate"));
-          await loadAnnouncements();
-        } catch (err) {
-          alert(err.message);
-        }
-      });
-    });
   } catch (err) {
     document.getElementById("announcements-table").innerHTML =
-      `<tr><td colspan="5" style="color:var(--badge-red-text);">Failed to load: ${escapeHtml(err.message)}</td></tr>`;
+      `<tr><td colspan="4" style="color:var(--badge-red-text);">Failed to load: ${escapeHtml(err.message)}</td></tr>`;
   }
 }
 

@@ -37,7 +37,8 @@ Run these SQL migrations against your Supabase project (SQL Editor, or
 1. `supabase/migrations/001_init_schema.sql`
 2. `supabase/migrations/002_make_release_update_url_optional.sql`
 3. `supabase/migrations/003_request_logs.sql` — required for the **Logs** page
-4. `supabase/migrations/004_in_app_announcements.sql` — in-app messages (no Firebase)
+4. `supabase/migrations/004_in_app_announcements.sql` — one-shot in-app messages (no Firebase)
+5. `supabase/migrations/005_simplify_announcements.sql` — only if you already ran an older 004
 
 ### 2. Backend
 ```bash

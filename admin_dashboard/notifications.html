@@ -91,7 +91,8 @@
       <div class="card">
         <h3>In-app announcement (no Firebase)</h3>
         <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 13px;">
-          Shown as a dialog inside the PSC app on next launch. Does not use device push notifications.
+          One-shot message shown inside the PSC app on next launch. Not tied to a release.
+          Each device sees it once; to send the same text again, publish a new announcement.
         </p>
         <form id="announcement-form">
           <div class="form-group">
@@ -112,20 +113,19 @@
       </div>
 
       <div class="card">
-        <h3>Active / recent in-app announcements</h3>
+        <h3>Published in-app announcements</h3>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
                 <th>App</th>
                 <th>Title</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th></th>
+                <th>Message</th>
+                <th>Published</th>
               </tr>
             </thead>
             <tbody id="announcements-table">
-              <tr><td colspan="5" style="text-align:center; padding: 24px;">Loading…</td></tr>
+              <tr><td colspan="4" style="text-align:center; padding: 24px;">Loading…</td></tr>
             </tbody>
           </table>
         </div>
@@ -190,8 +190,8 @@
     </main>
   </div>
 
-  <script src="js/api.js?v=2"></script>
+  <script src="js/api.js?v=3"></script>
   <script src="js/ui.js"></script>
-  <script src="js/notifications.js?v=2"></script>
+  <script src="js/notifications.js?v=3"></script>
 </body>
 </html>
