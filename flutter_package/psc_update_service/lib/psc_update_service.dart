@@ -2,25 +2,22 @@ library psc_update_service;
 
 import 'package:flutter/material.dart';
 
+import 'src/models/announcement.dart';
 import 'src/models/update_response.dart';
+import 'src/services/announcement_client.dart';
 import 'src/services/notification_client.dart';
 import 'src/services/update_client.dart';
+import 'src/widgets/announcement_dialog.dart';
 import 'src/widgets/update_dialog.dart';
 
+export 'src/models/announcement.dart';
 export 'src/models/update_response.dart';
+export 'src/services/announcement_client.dart';
 export 'src/services/notification_client.dart';
+export 'src/widgets/announcement_dialog.dart' show showPscAnnouncementDialog;
 export 'src/widgets/update_dialog.dart' show showPscUpdateDialog;
 
-/// Simple static entrypoint so any PSC app can integrate in ~2 lines:
-///
-/// ```dart
-/// PscUpdateService.configure(baseUrl: 'https://psc-update-api.onrender.com');
-///
-/// final update = await PscUpdateService.checkForUpdate(appKey: 'psc_notes');
-/// if (context.mounted) {
-///   await showPscUpdateDialog(context, appName: 'PSC Notes', info: update);
-/// }
-/// ```
+/// Simple static entrypoint so any PSC app can integrate in ~2 lines.
 class PscUpdateService {
   static String? _baseUrl;
 
@@ -56,11 +53,44 @@ class PscUpdateService {
     await showPscUpdateDialog(context, appName: appName, info: info);
   }
 
-  /// Registers an FCM token with the PSC backend and (server-side)
-  /// subscribes it to the app's `app_key` topic.
-  ///
-  /// Obtain [fcmToken] from `FirebaseMessaging.instance.getToken()` in
-  /// the host app. Never throws — returns `false` on failure.
+  /// Fetches the latest in-app announcement (no Firebase).
+  /// Returns `null` if none, already dismissed, or offline.
+  static Future<PscAnnouncement?> checkForAnnouncement({
+    required String appKey,
+  }) async {
+    final client = PscAnnouncementClient(baseUrl: _requireBaseUrl);
+    return client.checkForAnnouncement(appKey: appKey);
+  }
+
+  /// Checks for an in-app announcement and shows a dialog if one exists.
+  /// Marks it dismissed after the user closes the dialog.
+  static Future<void> checkAndShowAnnouncementIfNeeded(
+    BuildContext context, {
+    required String appKey,
+  }) async {
+    final client = PscAnnouncementClient(baseUrl: _requireBaseUrl);
+    final announcement = await client.checkForAnnouncement(appKey: appKey);
+    if (announcement == null || !context.mounted) return;
+
+    await showPscAnnouncementDialog(context, announcement: announcement);
+    await client.markDismissed(
+      appKey: appKey,
+      announcementId: announcement.id,
+    );
+  }
+
+  /// Update check + in-app announcement (in that order). No Firebase.
+  static Future<void> checkUpdatesAndAnnouncements(
+    BuildContext context, {
+    required String appKey,
+    required String appName,
+  }) async {
+    await checkAndPromptIfNeeded(context, appKey: appKey, appName: appName);
+    if (!context.mounted) return;
+    await checkAndShowAnnouncementIfNeeded(context, appKey: appKey);
+  }
+
+  /// Optional FCM device register (only if you also want system pushes).
   static Future<bool> registerForNotifications({
     required String appKey,
     required String fcmToken,

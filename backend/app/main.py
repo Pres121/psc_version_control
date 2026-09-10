@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from app.api.v1 import apps, auth, logs, notifications, releases, updates
+from app.api.v1 import announcements, apps, auth, logs, notifications, releases, updates
 from app.core.config import get_settings
 from app.core.limiter import limiter
 
@@ -44,6 +44,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 
 
 app.include_router(updates.router, prefix=settings.API_V1_PREFIX)
+app.include_router(announcements.router, prefix=settings.API_V1_PREFIX)
 app.include_router(apps.router, prefix=settings.API_V1_PREFIX)
 app.include_router(releases.router, prefix=settings.API_V1_PREFIX)
 app.include_router(notifications.router, prefix=settings.API_V1_PREFIX)

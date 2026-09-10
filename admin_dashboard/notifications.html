@@ -81,7 +81,7 @@
 
       <div class="topbar-right">
         <div class="system-status">
-          <span class="pulse-dot"></span> FCM Messaging Active
+          <span class="pulse-dot"></span> In-app + FCM ready
         </div>
       </div>
     </header>
@@ -89,7 +89,50 @@
     <!-- Main Content -->
     <main>
       <div class="card">
-        <h3>Broadcast Release Notification</h3>
+        <h3>In-app announcement (no Firebase)</h3>
+        <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 13px;">
+          Shown as a dialog inside the PSC app on next launch. Does not use device push notifications.
+        </p>
+        <form id="announcement-form">
+          <div class="form-group">
+            <label for="announcement_application_id">Application</label>
+            <select id="announcement_application_id" required></select>
+          </div>
+          <div class="form-group">
+            <label for="announcement_title">Title</label>
+            <input id="announcement_title" required placeholder="New features available" />
+          </div>
+          <div class="form-group">
+            <label for="announcement_message">Message</label>
+            <textarea id="announcement_message" required rows="3" placeholder="We've improved sync and fixed several bugs. Open the app to explore."></textarea>
+          </div>
+          <div class="error" id="announcement-error" style="display:none"></div>
+          <button class="primary" type="submit">Publish in-app message</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Active / recent in-app announcements</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>App</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="announcements-table">
+              <tr><td colspan="5" style="text-align:center; padding: 24px;">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Broadcast Release Notification (FCM — optional)</h3>
         <form id="notify-form">
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
             <div class="form-group">
@@ -105,7 +148,7 @@
 
           <div class="form-group">
             <label for="title">Notification Title</label>
-            <input id="title" required placeholder="🚀 Important App Update Available" />
+            <input id="title" required placeholder="Important App Update Available" />
           </div>
 
           <div class="form-group">
@@ -125,7 +168,7 @@
       </div>
 
       <div class="card">
-        <h3>Broadcast History</h3>
+        <h3>FCM Broadcast History</h3>
         <div class="table-wrapper">
           <table>
             <thead>
@@ -147,8 +190,8 @@
     </main>
   </div>
 
-  <script src="js/api.js"></script>
+  <script src="js/api.js?v=2"></script>
   <script src="js/ui.js"></script>
-  <script src="js/notifications.js"></script>
+  <script src="js/notifications.js?v=2"></script>
 </body>
 </html>
