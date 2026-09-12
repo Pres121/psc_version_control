@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>PSC App Update Manager — Releases</title>
-<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/style.css?v=3" />
 </head>
 <body>
   <!-- Sidebar Overlay -->
@@ -73,10 +73,10 @@
         <button class="dialog-close" type="button" data-close-dialog aria-label="Close">×</button>
       </div>
       <p id="action-dialog-description" class="dialog-description"></p>
-      <div class="verification-callout">Enter the <strong>current</strong> app key and release version exactly as shown in the table.</div>
-      <div class="release-grid">
-        <div class="form-group"><label for="verify_app_key">App key</label><input id="verify_app_key" required autocomplete="off" placeholder="psc_notes" /></div>
-        <div class="form-group"><label for="verify_version">Current release version</label><input id="verify_version" required autocomplete="off" placeholder="1.1.0" /></div>
+      <div class="verification-callout">Re-enter the app key (e.g. <code>psc_notes</code>) to confirm this action.</div>
+      <div class="form-group">
+        <label for="verify_app_key">App key</label>
+        <input id="verify_app_key" required autocomplete="off" placeholder="psc_notes" />
       </div>
       <div id="edit-release-fields" hidden>
         <div class="dialog-divider"></div><h3>Edit release details</h3>
@@ -229,8 +229,8 @@
     </main>
   </div>
 
-  <script src="js/api.js?v=2"></script>
+  <script src="js/api.js?v=4"></script>
   <script src="js/ui.js"></script>
-  <script src="js/releases.js"></script>
+  <script src="js/releases.js?v=4"></script>
 </body>
 </html>

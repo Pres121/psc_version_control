@@ -93,19 +93,16 @@ Returns the current admin's profile.
 - `GET /releases?application_id=&platform=` — list, filterable
 - `POST /releases` — create a draft release (`is_published: false`)
 - `GET /releases/{id}` — detail
-- `PATCH /releases/{id}` — partial update
 - `PATCH /releases/{id}` — edit a release. Requires the editable fields plus
-  `{ "app_key": "psc_notes", "verification_version": "1.1.0" }`.
-- `POST /releases/{id}/publish` — publish a release. Requires the same
-  verification payload.
+  `{ "app_key": "psc_notes" }` to confirm.
+- `POST /releases/{id}/publish` — publish a release. Body: `{ "app_key": "psc_notes" }`.
 - `POST /releases/{id}/unpublish` — remove a release from update checks.
-  Requires the same verification payload.
-- `DELETE /releases/{id}` — permanently delete a release. Requires the same
-  verification payload.
+  Same confirmation body.
+- `DELETE /releases/{id}` — permanently delete a release. Same confirmation body.
 
-The verification fields must match the release's current app key and version
-exactly. Release creation and version/build edits reject duplicate versions,
-lower versions, and build numbers that do not increase for that app/platform.
+Confirmation only requires re-entering the app key. Release creation and
+version/build edits reject duplicate versions, lower versions, and build
+numbers that do not increase for that app/platform.
 
 ### Notifications
 - `POST /notifications/send` — `{ application_id, release_id, title, message }`.

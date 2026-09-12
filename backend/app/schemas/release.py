@@ -52,8 +52,8 @@ class ReleaseUpdate(BaseModel):
 
 
 class ReleaseVerification(BaseModel):
+    """Confirm sensitive release actions by re-entering the app key only."""
     app_key: str = Field(..., min_length=1, max_length=100)
-    verification_version: str = Field(..., min_length=1, max_length=50)
 
 
 class VerifiedReleaseUpdate(ReleaseUpdate, ReleaseVerification):

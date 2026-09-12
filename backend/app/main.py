@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from postgrest.exceptions import APIError
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
@@ -32,6 +33,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(APIError)
+async def supabase_api_error_handler(request: Request, exc: APIError):
+    code = str(getattr(exc, "code", "") or "")
+    message = str(getattr(exc, "message", "") or exc).lower()
+    if code in {"502", "503", "504"} or "timeout" in message or "gateway" in message:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"detail": "Database temporarily unavailable. Please try again in a moment."},
+        )
+    return JSONResponse(
+        status_code=status.HTTP_502_BAD_GATEWAY,
+        content={"detail": "Database request failed. Please try again."},
+    )
 
 
 @app.exception_handler(Exception)

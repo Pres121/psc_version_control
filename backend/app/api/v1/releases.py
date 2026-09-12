@@ -101,7 +101,7 @@ def update_release(release_id: UUID, payload: VerifiedReleaseUpdate, admin: dict
     updates = {
         key: getattr(payload, key)
         for key in payload.model_fields_set
-        if key not in {"app_key", "verification_version"}
+        if key not in {"app_key"}
     }
     if not updates:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields to update")
@@ -188,9 +188,9 @@ def _verify_release_action(supabase, release_id: UUID, verification: ReleaseVeri
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
     app = app_res.data[0]
 
-    if verification.app_key != app["app_key"] or verification.verification_version != release["version"]:
+    if verification.app_key != app["app_key"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Verification failed. Enter the current app key and release version exactly.",
+            detail="Verification failed. Re-enter the app key exactly to confirm.",
         )
     return release, app

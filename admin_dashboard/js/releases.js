@@ -198,7 +198,6 @@ function openReleaseAction(action, release) {
   document.getElementById("action-dialog-description").textContent = description;
   document.getElementById("action-submit").textContent = submitLabel;
   document.getElementById("verify_app_key").value = "";
-  document.getElementById("verify_version").value = "";
   document.getElementById("action-error").style.display = "none";
   editFields.hidden = action !== "edit";
 
@@ -230,13 +229,12 @@ document.getElementById("release-action-form").addEventListener("submit", async 
   const app = appsById[release.application_id];
   const verification = {
     app_key: document.getElementById("verify_app_key").value.trim(),
-    verification_version: document.getElementById("verify_version").value.trim(),
   };
   const errorElement = document.getElementById("action-error");
   errorElement.style.display = "none";
 
-  if (verification.app_key !== app?.app_key || verification.verification_version !== release.version) {
-    errorElement.textContent = "Verification does not match this release. Enter the current app key and version exactly.";
+  if (verification.app_key !== app?.app_key) {
+    errorElement.textContent = "App key does not match. Re-enter it exactly to confirm.";
     errorElement.style.display = "block";
     return;
   }
