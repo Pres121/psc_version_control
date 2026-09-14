@@ -57,10 +57,14 @@ def check_for_update(payload: UpdateCheckRequest) -> UpdateCheckResponse:
     if not update_available and not update_required:
         return UpdateCheckResponse(update_available=False, update_required=False)
 
-    # Prefer uploaded build download page; fall back to any custom update_url.
-    resolved_url = latest.get("update_url")
+    # PSC download page when a binary was uploaded; otherwise custom store URL;
+    # always fall back to the download page so Update Now opens something useful.
     if latest.get("storage_path"):
         resolved_url = download_page_url(app_row["app_key"], payload.platform)
+    else:
+        resolved_url = latest.get("update_url") or download_page_url(
+            app_row["app_key"], payload.platform
+        )
 
     return UpdateCheckResponse(
         update_available=update_available,

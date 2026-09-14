@@ -2,7 +2,7 @@ name: psc_update_service
 description: >
   Reusable in-app update checker + update dialog for PSC Flutter
   applications (PSC Notes, PSC Calendar, PSC Savings, PSC Inventory, ...).
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/psc/psc-update-service
 
 environment:

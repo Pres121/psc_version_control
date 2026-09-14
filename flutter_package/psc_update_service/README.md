@@ -76,6 +76,27 @@ In a debug build, failed requests now print messages beginning with
 offline device, or unavailable API without changing the production
 offline-safe behavior.
 
+## Update Now opens nothing (Android fix)
+
+If tapping **Update Now** does nothing, add this inside the `<manifest>` tag
+in your app's `android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<queries>
+  <intent>
+    <action android:name="android.intent.action.VIEW" />
+    <data android:scheme="https" />
+  </intent>
+</queries>
+```
+
+Also make sure the release has an **APK uploaded** and is **Published** in
+the admin dashboard. The update check returns a PSC download page URL such as
+`https://psc-version-control.onrender.com/download/psc_notes?platform=android`.
+
+Pull the latest `psc_update_service` package — it no longer relies on
+`canLaunchUrl`, which often blocks https links on Android.
+
 ## Offline-first behavior
 
 - Network calls run against a short timeout (4s by default).
