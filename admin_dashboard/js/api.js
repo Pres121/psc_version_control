@@ -43,6 +43,34 @@ async function apiRequest(path, { method = "GET", body } = {}) {
   return res.json();
 }
 
+async function apiUpload(path, file) {
+  const headers = {};
+  const token = getToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const body = new FormData();
+  body.append("file", file);
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers,
+    body,
+  });
+
+  if (res.status === 401) {
+    clearToken();
+    window.location.href = "login.html";
+    throw new Error("Not authenticated");
+  }
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(formatApiError(data, res.status));
+  }
+
+  return res.json();
+}
+
 // FastAPI returns validation failures as an array of objects.  Converting that
 // array directly to text produces "[object Object]", which gives admins no
 // useful indication of what needs correcting.
@@ -89,6 +117,7 @@ const Api = {
   publishRelease: (id, verification) => apiRequest(`/releases/${id}/publish`, { method: "POST", body: verification }),
   unpublishRelease: (id, verification) => apiRequest(`/releases/${id}/unpublish`, { method: "POST", body: verification }),
   deleteRelease: (id, verification) => apiRequest(`/releases/${id}`, { method: "DELETE", body: verification }),
+  uploadReleaseBinary: (id, file) => apiUpload(`/releases/${id}/upload`, file),
 
   sendNotification: (payload) =>
     apiRequest("/notifications/send", { method: "POST", body: payload }),

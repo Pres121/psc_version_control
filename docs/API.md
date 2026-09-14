@@ -111,8 +111,14 @@ numbers that do not increase for that app/platform.
   from registered devices for that app.
 - `GET /notifications/history?application_id=` — notification log
 
-### Logs
-- `GET /logs` — client activity (update checks / device registers) with IP
+### Downloads (public)
+- `GET /download/{app_key}?platform=android` — branded HTML page; auto-starts download
+- `GET /downloads/{app_key}?platform=android` — JSON with signed download URL + metadata
+
+### Releases (admin)
+- `POST /releases/{id}/upload` — multipart form field `file` (`.apk` / `.ipa` / `.zip`).
+  Overwrites the latest binary for that app+platform and sets `update_url` to the
+  PSC download page.
 
 ## Error format
 

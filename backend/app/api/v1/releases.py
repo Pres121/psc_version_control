@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from app.auth.dependencies import get_current_admin
 from app.database.supabase_client import get_supabase
@@ -10,6 +10,7 @@ from app.schemas.release import (
     ReleaseVerification,
     VerifiedReleaseUpdate,
 )
+from app.services.storage_service import upload_app_binary
 from app.services.version_service import compare_versions
 
 router = APIRouter(prefix="/releases", tags=["releases"])
@@ -92,6 +93,55 @@ def get_release(release_id: UUID, admin: dict = Depends(get_current_admin)):
     if not res.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Release not found")
     return res.data[0]
+
+
+@router.post("/{release_id}/upload", response_model=ReleaseOut)
+async def upload_release_binary(
+    release_id: UUID,
+    file: UploadFile = File(...),
+    admin: dict = Depends(get_current_admin),
+):
+    """Upload an APK/IPA for this release. Overwrites the app+platform latest build."""
+    supabase = get_supabase()
+    release_res = supabase.table("releases").select("*").eq("id", str(release_id)).limit(1).execute()
+    if not release_res.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Release not found")
+    release = release_res.data[0]
+
+    app_res = (
+        supabase.table("apps")
+        .select("app_key")
+        .eq("id", release["application_id"])
+        .limit(1)
+        .execute()
+    )
+    if not app_res.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
+
+    uploaded = await upload_app_binary(
+        app_key=app_res.data[0]["app_key"],
+        platform=release["platform"],
+        version=release["version"],
+        build_number=release["build_number"],
+        file=file,
+    )
+
+    updated = (
+        supabase.table("releases")
+        .update(
+            {
+                "storage_path": uploaded["storage_path"],
+                "file_name": uploaded["file_name"],
+                "file_size_bytes": uploaded["file_size_bytes"],
+                "update_url": uploaded["update_url"],
+            }
+        )
+        .eq("id", str(release_id))
+        .execute()
+    )
+    if not updated.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Release not found")
+    return updated.data[0]
 
 
 @router.patch("/{release_id}", response_model=ReleaseOut)

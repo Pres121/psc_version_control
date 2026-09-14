@@ -30,16 +30,24 @@ async function loadReleases() {
         const mandatoryBadge = r.is_mandatory
           ? '<span class="badge mandatory">Mandatory</span>'
           : '<span style="color:var(--text-muted);">Optional</span>';
+        const binaryBadge = r.storage_path
+          ? `<span class="badge sent" title="${escapeAttr(r.file_name || r.storage_path)}">Uploaded</span>`
+          : '<span class="badge draft">No file</span>';
         return `
           <tr>
             <td style="font-weight:700; color:var(--text-heading);">${appName}</td>
             <td><span style="text-transform:capitalize; font-weight:600;">${r.platform}</span></td>
             <td><code>${r.version}</code></td>
             <td><code>${r.build_number}</code></td>
+            <td>${binaryBadge}</td>
             <td>${statusBadge}</td>
             <td>${mandatoryBadge}</td>
             <td><div class="release-actions">
               <button class="secondary action-button" data-release-action="edit" data-release-id="${r.id}">Edit</button>
+              <label class="secondary action-button" style="cursor:pointer; margin:0;">
+                Upload
+                <input type="file" accept=".apk,.aab,.ipa,.zip" data-upload-release-id="${r.id}" hidden />
+              </label>
               <button class="${r.is_published ? "secondary" : "primary"} action-button" data-release-action="${r.is_published ? "unpublish" : "publish"}" data-release-id="${r.id}">${r.is_published ? "Unpublish" : "Publish"}</button>
               <button class="danger action-button" data-release-action="delete" data-release-id="${r.id}">Delete</button>
             </div></td>
@@ -53,10 +61,33 @@ async function loadReleases() {
         if (release) openReleaseAction(btn.dataset.releaseAction, release);
       });
     });
+
+    document.querySelectorAll("[data-upload-release-id]").forEach((input) => {
+      input.addEventListener("change", async () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        try {
+          await Api.uploadReleaseBinary(input.dataset.uploadReleaseId, file);
+          await loadReleases();
+          showReleaseMessage("success", `Uploaded ${file.name}. It replaces the previous build for this app/platform.`);
+        } catch (err) {
+          showReleaseMessage("error", err.message);
+        } finally {
+          input.value = "";
+        }
+      });
+    });
   } catch (err) {
     document.getElementById("releases-table").innerHTML =
-      `<tr><td colspan="7" style="color:var(--badge-red-text);">Failed to load releases: ${err.message}</td></tr>`;
+      `<tr><td colspan="8" style="color:var(--badge-red-text);">Failed to load releases: ${err.message}</td></tr>`;
   }
+}
+
+function escapeAttr(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;");
 }
 
 document.getElementById("release-form").addEventListener("submit", async (e) => {
@@ -199,17 +230,31 @@ function openReleaseAction(action, release) {
   document.getElementById("action-submit").textContent = submitLabel;
   document.getElementById("verify_app_key").value = "";
   document.getElementById("action-error").style.display = "none";
-  editFields.hidden = action !== "edit";
 
-  if (action === "edit") {
-    document.getElementById("edit_version").value = release.version;
-    document.getElementById("edit_build_number").value = release.build_number;
-    document.getElementById("edit_release_title").value = release.release_title || "";
-    document.getElementById("edit_release_notes").value = (release.release_notes || []).join("\n");
-    document.getElementById("edit_minimum_supported_version").value = release.minimum_supported_version;
-    document.getElementById("edit_update_url").value = release.update_url || "";
-    document.getElementById("edit_is_mandatory").checked = release.is_mandatory;
+  const isEdit = action === "edit";
+  editFields.hidden = !isEdit;
+
+  // Prefill from the existing release; required attrs only apply while editing
+  // so publish/unpublish/delete are not blocked by empty edit inputs.
+  ["edit_version", "edit_build_number", "edit_minimum_supported_version"].forEach((id) => {
+    document.getElementById(id).required = isEdit;
+  });
+
+  document.getElementById("edit_version").value = release.version || "";
+  document.getElementById("edit_build_number").value = release.build_number ?? "";
+  document.getElementById("edit_release_title").value = release.release_title || "";
+  document.getElementById("edit_release_notes").value = (release.release_notes || []).join("\n");
+  document.getElementById("edit_minimum_supported_version").value =
+    release.minimum_supported_version || "";
+  document.getElementById("edit_update_url").value = release.update_url || "";
+  document.getElementById("edit_is_mandatory").checked = Boolean(release.is_mandatory);
+  const editUpload = document.getElementById("edit_upload_file");
+  if (editUpload) editUpload.value = "";
+
+  if (app?.app_key) {
+    document.getElementById("verify_app_key").placeholder = app.app_key;
   }
+
   dialog.showModal();
 }
 
@@ -254,6 +299,11 @@ document.getElementById("release-action-form").addEventListener("submit", async 
         update_url: document.getElementById("edit_update_url").value.trim() || null,
         is_mandatory: document.getElementById("edit_is_mandatory").checked,
       });
+      const uploadInput = document.getElementById("edit_upload_file");
+      if (uploadInput?.files?.[0]) {
+        await Api.uploadReleaseBinary(release.id, uploadInput.files[0]);
+        uploadInput.value = "";
+      }
     } else if (action === "publish") {
       await Api.publishRelease(release.id, verification);
     } else if (action === "unpublish") {

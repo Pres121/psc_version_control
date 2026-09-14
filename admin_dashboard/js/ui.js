@@ -5,44 +5,86 @@ document.addEventListener("DOMContentLoaded", () => {
   const sidebar = document.getElementById("sidebar");
   const sidebarOverlay = document.getElementById("sidebar-overlay");
   const closeSidebarBtn = document.getElementById("close-sidebar");
+  const appWrapper = document.querySelector(".app-wrapper");
+  const SIDEBAR_KEY = "psc_sidebar_collapsed";
 
-  function openMenu() {
+  function isDesktop() {
+    return window.matchMedia("(min-width: 1024px)").matches;
+  }
+
+  function openMobileMenu() {
     if (sidebar) sidebar.classList.add("open");
     if (sidebarOverlay) sidebarOverlay.classList.add("open");
     document.body.style.overflow = "hidden";
   }
 
-  function closeMenu() {
+  function closeMobileMenu() {
     if (sidebar) sidebar.classList.remove("open");
     if (sidebarOverlay) sidebarOverlay.classList.remove("open");
     document.body.style.overflow = "";
   }
 
+  function setDesktopCollapsed(collapsed) {
+    if (!sidebar || !appWrapper) return;
+    sidebar.classList.toggle("closed", collapsed);
+    appWrapper.classList.toggle("full-width", collapsed);
+    localStorage.setItem(SIDEBAR_KEY, collapsed ? "1" : "0");
+    if (menuToggle) {
+      menuToggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      menuToggle.setAttribute(
+        "aria-label",
+        collapsed ? "Expand navigation" : "Collapse navigation"
+      );
+    }
+  }
+
+  function toggleSidebar() {
+    if (isDesktop()) {
+      const collapsed = !sidebar.classList.contains("closed");
+      setDesktopCollapsed(collapsed);
+    } else if (sidebar.classList.contains("open")) {
+      closeMobileMenu();
+    } else {
+      openMobileMenu();
+    }
+  }
+
+  // Restore desktop preference
+  if (isDesktop() && localStorage.getItem(SIDEBAR_KEY) === "1") {
+    setDesktopCollapsed(true);
+  } else if (isDesktop()) {
+    setDesktopCollapsed(false);
+  }
+
   if (menuToggle) {
     menuToggle.addEventListener("click", (e) => {
       e.stopPropagation();
-      if (sidebar && sidebar.classList.contains("open")) {
-        closeMenu();
-      } else {
-        openMenu();
-      }
+      toggleSidebar();
     });
   }
 
   if (closeSidebarBtn) {
-    closeSidebarBtn.addEventListener("click", closeMenu);
+    closeSidebarBtn.addEventListener("click", closeMobileMenu);
   }
 
   if (sidebarOverlay) {
-    sidebarOverlay.addEventListener("click", closeMenu);
+    sidebarOverlay.addEventListener("click", closeMobileMenu);
   }
 
-  // Close sidebar on Escape key
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeMenu();
+    if (e.key === "Escape") closeMobileMenu();
   });
 
-  // Global logout handler
+  window.addEventListener("resize", () => {
+    if (isDesktop()) {
+      closeMobileMenu();
+      setDesktopCollapsed(localStorage.getItem(SIDEBAR_KEY) === "1");
+    } else {
+      sidebar?.classList.remove("closed");
+      appWrapper?.classList.remove("full-width");
+    }
+  });
+
   const logoutBtn = document.getElementById("logout");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", (e) => {
@@ -56,7 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Load User Info into Sidebar if authenticated
   if (typeof Api !== "undefined" && typeof getToken === "function" && getToken()) {
     Api.me()
       .then((user) => {
@@ -71,8 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
           userAvatarEl.textContent = initial;
         }
       })
-      .catch(() => {
-        // Ignored if not authenticated or error
-      });
+      .catch(() => {});
   }
 });

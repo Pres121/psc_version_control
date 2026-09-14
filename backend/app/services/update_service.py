@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 
 from app.database.supabase_client import get_supabase
 from app.schemas.update import UpdateCheckRequest, UpdateCheckResponse
+from app.services.storage_service import download_page_url
 from app.services.version_service import is_greater, is_less, is_valid_semver
 
 
@@ -15,7 +16,7 @@ def check_for_update(payload: UpdateCheckRequest) -> UpdateCheckResponse:
     # 1. Find the application (must exist and be active)
     app_res = (
         supabase.table("apps")
-        .select("id, name, is_active")
+        .select("id, name, app_key, is_active")
         .eq("app_key", payload.app_key)
         .limit(1)
         .execute()
@@ -32,14 +33,11 @@ def check_for_update(payload: UpdateCheckRequest) -> UpdateCheckResponse:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid version format")
 
     # 2. Find the latest published release for this app/platform.
-    #    We fetch published releases and pick the max by semantic version,
-    #    since build_number/version ordering is not guaranteed to be a plain
-    #    string/int sort (e.g. "1.10.0" vs "1.9.0").
     releases_res = (
         supabase.table("releases")
         .select(
             "version, build_number, release_title, release_notes, "
-            "minimum_supported_version, is_mandatory, update_url"
+            "minimum_supported_version, is_mandatory, update_url, storage_path"
         )
         .eq("application_id", app_row["id"])
         .eq("platform", payload.platform)
@@ -53,15 +51,16 @@ def check_for_update(payload: UpdateCheckRequest) -> UpdateCheckResponse:
 
     latest = max(releases, key=lambda r: _version_sort_key(r["version"]))
 
-    # 3. Compare versions.
     update_available = is_greater(latest["version"], payload.version)
-
-    # 4. Mandatory if the client's installed version is below the release's
-    #    minimum supported version.
     update_required = is_less(payload.version, latest["minimum_supported_version"])
 
     if not update_available and not update_required:
         return UpdateCheckResponse(update_available=False, update_required=False)
+
+    # Prefer uploaded build download page; fall back to any custom update_url.
+    resolved_url = latest.get("update_url")
+    if latest.get("storage_path"):
+        resolved_url = download_page_url(app_row["app_key"], payload.platform)
 
     return UpdateCheckResponse(
         update_available=update_available,
@@ -72,7 +71,7 @@ def check_for_update(payload: UpdateCheckRequest) -> UpdateCheckResponse:
         title=latest["release_title"] or "New version available",
         message=f"{app_row['name']} has been updated with new features and improvements.",
         release_notes=latest["release_notes"] or [],
-        update_url=latest["update_url"],
+        update_url=resolved_url,
     )
 
 
@@ -80,5 +79,4 @@ def _version_sort_key(version: str):
     from app.services.version_service import parse_version
 
     major, minor, patch, pre = parse_version(version)
-    # None (final release) should sort after any pre-release string
     return (major, minor, patch, pre is None, pre or "")

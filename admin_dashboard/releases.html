@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>PSC App Update Manager — Releases</title>
-<link rel="stylesheet" href="css/style.css?v=3" />
+<link rel="stylesheet" href="css/style.css?v=7" />
 </head>
 <body>
   <!-- Sidebar Overlay -->
@@ -88,7 +88,12 @@
         <div class="form-group"><label for="edit_release_notes">Release notes (one per line)</label><textarea id="edit_release_notes" rows="3"></textarea></div>
         <div class="release-grid">
           <div class="form-group"><label for="edit_minimum_supported_version">Minimum supported version</label><input id="edit_minimum_supported_version" required /></div>
-          <div class="form-group"><label for="edit_update_url">Google Play Store URL <span class="field-optional">Optional</span></label><input id="edit_update_url" type="url" /></div>
+          <div class="form-group"><label for="edit_update_url">External store URL <span class="field-optional">Optional</span></label><input id="edit_update_url" type="url" /></div>
+        </div>
+        <div class="form-group">
+          <label for="edit_upload_file">App binary (APK / IPA) <span class="field-optional">Optional</span></label>
+          <input id="edit_upload_file" type="file" accept=".apk,.aab,.ipa,.zip,application/vnd.android.package-archive" />
+          <p class="field-hint">Uploading replaces the previous build for this app &amp; platform. Saved when you confirm edit.</p>
         </div>
         <label class="checkbox-label"><input type="checkbox" id="edit_is_mandatory" /> <span>Mandatory update</span></label>
       </div>
@@ -180,9 +185,9 @@
             </div>
 
             <div class="form-group">
-              <label for="update_url">Google Play Store URL <span class="field-optional">Optional</span></label>
+              <label for="update_url">External store URL <span class="field-optional">Optional</span></label>
               <input id="update_url" type="url" placeholder="https://play.google.com/store/apps/details?id=..." />
-              <p class="field-hint">Leave blank when the app is distributed outside Google Play.</p>
+              <p class="field-hint">Usually leave blank. Prefer uploading the APK/IPA after creating the draft — Update Now will open the PSC download page.</p>
             </div>
           </div>
 
@@ -215,6 +220,7 @@
                 <th>Platform</th>
                 <th>Version</th>
                 <th>Build</th>
+                <th>Binary</th>
                 <th>Status</th>
                 <th>Type</th>
                 <th>Action</th>
@@ -229,8 +235,8 @@
     </main>
   </div>
 
-  <script src="js/api.js?v=4"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/releases.js?v=4"></script>
+  <script src="js/api.js?v=8"></script>
+  <script src="js/ui.js?v=7"></script>
+  <script src="js/releases.js?v=8"></script>
 </body>
 </html>

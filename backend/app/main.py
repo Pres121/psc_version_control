@@ -1,13 +1,14 @@
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from postgrest.exceptions import APIError
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
-from app.api.v1 import announcements, apps, auth, logs, notifications, releases, updates
+from app.api.v1 import announcements, apps, auth, downloads, logs, notifications, releases, updates
 from app.core.config import get_settings
 from app.core.limiter import limiter
+from app.templates.download_page import DOWNLOAD_PAGE_HTML
 
 settings = get_settings()
 
@@ -63,10 +64,18 @@ app.include_router(updates.router, prefix=settings.API_V1_PREFIX)
 app.include_router(announcements.router, prefix=settings.API_V1_PREFIX)
 app.include_router(apps.router, prefix=settings.API_V1_PREFIX)
 app.include_router(releases.router, prefix=settings.API_V1_PREFIX)
+app.include_router(downloads.router, prefix=settings.API_V1_PREFIX)
 app.include_router(notifications.router, prefix=settings.API_V1_PREFIX)
 app.include_router(logs.router, prefix=settings.API_V1_PREFIX)
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 
+
 @app.get("/", tags=["health"])
 def health_check():
     return {"status": "ok", "service": settings.APP_NAME}
+
+
+@app.get("/download/{app_key}", response_class=HTMLResponse, tags=["downloads"])
+def download_landing_page(app_key: str):
+    """Branded page opened by Flutter 'Update Now' — auto-starts the APK/IPA download."""
+    return HTMLResponse(content=DOWNLOAD_PAGE_HTML)

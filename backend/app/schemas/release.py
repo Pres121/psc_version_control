@@ -62,6 +62,9 @@ class VerifiedReleaseUpdate(ReleaseUpdate, ReleaseVerification):
 
 class ReleaseOut(ReleaseBase):
     id: UUID
+    storage_path: str | None = None
+    file_name: str | None = None
+    file_size_bytes: int | None = None
     created_at: datetime
     updated_at: datetime
 

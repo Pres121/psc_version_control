@@ -54,6 +54,12 @@ class Settings(BaseSettings):
     # --- Rate limiting ---
     UPDATE_CHECK_RATE_LIMIT: str = "60/minute"
 
+    # --- App binary storage (Supabase Storage) ---
+    STORAGE_BUCKET: str = "app-builds"
+    # Public URL of this API (used to build download-page links for Flutter Update Now)
+    PUBLIC_BASE_URL: str = "https://psc-version-control.onrender.com"
+    SIGNED_URL_EXPIRE_SECONDS: int = 60 * 60  # 1 hour
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 
