@@ -15,10 +15,16 @@ def main():
         print("Usage: python -m scripts.create_admin <email> <password> [full_name] [role]")
         sys.exit(1)
 
-    email = sys.argv[1]
+    email = sys.argv[1].strip().lower()
     password = sys.argv[2]
+    if len(password) < 8:
+        print("Password must be at least 8 characters.")
+        sys.exit(1)
     full_name = sys.argv[3] if len(sys.argv) > 3 else None
     role = sys.argv[4] if len(sys.argv) > 4 else "admin"
+    if role not in {"admin", "superadmin"}:
+        print("Role must be 'admin' or 'superadmin'.")
+        sys.exit(1)
 
     supabase = get_supabase()
     existing = supabase.table("admin_users").select("id").eq("email", email).execute()

@@ -40,6 +40,8 @@ Run these SQL migrations against your Supabase project (SQL Editor, or
 4. `supabase/migrations/004_in_app_announcements.sql` — one-shot in-app messages (no Firebase)
 5. `supabase/migrations/005_simplify_announcements.sql` — only if you already ran an older 004
 6. `supabase/migrations/006_app_builds_storage.sql` — APK/IPA storage bucket + release file fields
+7. `supabase/migrations/007_security_hardening.sql` — RLS + private storage lock-down
+8. `supabase/migrations/008_admin_otp.sql` — email OTP codes for admin login
 
 ### 2. Backend
 ```bash

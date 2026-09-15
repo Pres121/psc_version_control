@@ -4,6 +4,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Request
 
 from app.auth.dependencies import get_current_admin
+from app.core.config import get_settings
+from app.core.limiter import limiter
 from app.database.supabase_client import get_supabase
 from app.schemas.notification import (
     DeviceRegisterRequest,
@@ -14,6 +16,7 @@ from app.services.log_service import log_request_event
 from app.services.notification_service import send_release_notification, subscribe_token_to_topic
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
+settings = get_settings()
 
 
 @router.post("/send", response_model=dict)
@@ -39,6 +42,7 @@ def notification_history(
 
 
 @router.post("/devices/register", status_code=201)
+@limiter.limit(settings.DEVICE_REGISTER_RATE_LIMIT)
 def register_device(request: Request, payload: DeviceRegisterRequest):
     """Called by Flutter apps at startup to subscribe a device's FCM token
     to its app's topic. Public endpoint - no admin data is exposed here."""

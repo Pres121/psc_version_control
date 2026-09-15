@@ -101,7 +101,15 @@ function formatApiError(data, status) {
 const Api = {
   login: (email, password) =>
     apiRequest("/auth/login", { method: "POST", body: { email, password } }),
+  verifyOtp: (challengeToken, otp) =>
+    apiRequest("/auth/verify-otp", {
+      method: "POST",
+      body: { challenge_token: challengeToken, otp },
+    }),
   me: () => apiRequest("/auth/me"),
+  listAdmins: () => apiRequest("/auth/admins"),
+  createAdmin: (payload) => apiRequest("/auth/admins", { method: "POST", body: payload }),
+  updateAdmin: (id, payload) => apiRequest(`/auth/admins/${id}`, { method: "PATCH", body: payload }),
 
   listApps: () => apiRequest("/apps"),
   createApp: (payload) => apiRequest("/apps", { method: "POST", body: payload }),

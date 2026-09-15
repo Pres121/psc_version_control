@@ -3,14 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PSC App Update Manager — Applications</title>
-<link rel="stylesheet" href="css/style.css?v=7" />
+<title>PSC App Update Manager — Admins</title>
+<link rel="stylesheet" href="css/style.css?v=8" />
 </head>
 <body>
-  <!-- Sidebar Overlay -->
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-  <!-- Slide Menu Sidebar -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <a href="index.html" class="brand">
@@ -24,32 +22,27 @@
 
     <nav class="sidebar-nav">
       <div class="nav-section-title">Main Menu</div>
-      
       <a href="index.html" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         <span>Overview</span>
       </a>
-
-      <a href="applications.html" class="nav-item active">
+      <a href="applications.html" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/></svg>
         <span>Applications</span>
       </a>
-
       <a href="releases.html" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         <span>Releases</span>
       </a>
-
       <a href="notifications.html" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         <span>Notifications</span>
       </a>
-
       <a href="logs.html" class="nav-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         <span>Logs</span>
       </a>
-      <a href="admins.html" class="nav-item">
+      <a href="admins.html" class="nav-item active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span>Admins</span>
       </a>
@@ -63,94 +56,74 @@
           <span class="user-role" id="sidebar-user-email">admin@psc.com</span>
         </div>
       </div>
-      <button id="logout" class="logout-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Logout
-      </button>
+      <button id="logout" class="logout-btn">Logout</button>
     </div>
   </aside>
 
-  <!-- App Wrapper -->
   <div class="app-wrapper">
-    <!-- Topbar Header -->
     <header class="topbar">
       <div class="topbar-left">
         <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation drawer">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
-        <div class="page-header">
-          <h1>Applications Management</h1>
-        </div>
+        <div class="page-header"><h1>Admin users</h1></div>
       </div>
-
       <div class="topbar-right">
-        <div class="system-status">
-          <span class="pulse-dot"></span> Active Suite
-        </div>
+        <div class="system-status"><span class="pulse-dot"></span> Superadmin only</div>
       </div>
     </header>
 
-    <!-- Main Content -->
     <main>
       <div class="card">
-        <h3>Add New Application</h3>
-        <form id="add-app-form">
-          <div class="form-group">
-            <label for="name">App Name</label>
-            <input id="name" required placeholder="PSC Reports" />
+        <h3>Add admin</h3>
+        <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 13px;">
+          Creates a login for PSC Update Hub. They will receive an invite email (when Resend is configured) and must complete OTP on every sign-in.
+        </p>
+        <form id="admin-form">
+          <div class="release-grid">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input id="email" type="email" required placeholder="colleague@company.com" />
+            </div>
+            <div class="form-group">
+              <label for="full_name">Full name</label>
+              <input id="full_name" placeholder="Jane Doe" />
+            </div>
           </div>
-
-          <div class="form-group">
-            <label for="app_key">App Key (lowercase, underscores)</label>
-            <input id="app_key" required placeholder="psc_reports" />
+          <div class="release-grid">
+            <div class="form-group">
+              <label for="role">Role</label>
+              <select id="role">
+                <option value="admin">Admin</option>
+                <option value="superadmin">Superadmin</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="password">Temporary password <span class="field-optional">Optional</span></label>
+              <input id="password" type="text" minlength="8" placeholder="Auto-generated if blank" />
+            </div>
           </div>
-
-          <div class="form-group">
-            <label for="package_name">Package Name</label>
-            <input id="package_name" required placeholder="com.psc.reports" />
-          </div>
-
-          <div class="form-group">
-            <label for="platform">Target Platform</label>
-            <select id="platform">
-              <option value="both">Both (Android & iOS)</option>
-              <option value="android">Android</option>
-              <option value="ios">iOS</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="description">Description</label>
-            <textarea id="description" rows="2" placeholder="Brief description of the PSC application"></textarea>
-          </div>
-
           <div class="error" id="error" style="display:none"></div>
-          
-          <div style="margin-top: 4px;">
-            <button class="primary" type="submit">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Add Application
-            </button>
-          </div>
+          <div class="success" id="success" style="display:none"></div>
+          <button class="primary" type="submit">Create admin</button>
         </form>
       </div>
 
       <div class="card">
-        <h3>Registered Applications</h3>
+        <h3>Team</h3>
         <div class="table-wrapper">
           <table>
             <thead>
               <tr>
                 <th>Name</th>
-                <th>App Key</th>
-                <th>Package Name</th>
-                <th>Platform</th>
+                <th>Email</th>
+                <th>Role</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th>Action</th>
               </tr>
             </thead>
-            <tbody id="apps-table">
-              <tr><td colspan="6" style="text-align:center; padding: 24px;">Loading applications…</td></tr>
+            <tbody id="admins-table">
+              <tr><td colspan="5" style="text-align:center; padding:24px;">Loading…</td></tr>
             </tbody>
           </table>
         </div>
@@ -158,8 +131,8 @@
     </main>
   </div>
 
-  <script src="js/api.js?v=2"></script>
+  <script src="js/api.js?v=9"></script>
   <script src="js/ui.js?v=7"></script>
-  <script src="js/apps.js"></script>
+  <script src="js/admins.js?v=1"></script>
 </body>
 </html>

@@ -4,6 +4,7 @@ __pycache__/
 .venv/
 venv/
 .env
+.superadmin_temp_password.txt
 
 # Flutter
 flutter_package/psc_update_service/.dart_tool/

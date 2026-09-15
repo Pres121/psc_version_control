@@ -1,16 +1,21 @@
 """Public download APIs for PSC app binaries."""
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Request, status
 
+from app.core.config import get_settings
+from app.core.limiter import limiter
 from app.database.supabase_client import get_supabase
 from app.schemas.download import DownloadInfoOut
 from app.services.storage_service import create_signed_download_url
 from app.services.version_service import compare_versions
 
 router = APIRouter(prefix="/downloads", tags=["downloads"])
+settings = get_settings()
 
 
 @router.get("/{app_key}", response_model=DownloadInfoOut)
+@limiter.limit(settings.DOWNLOAD_RATE_LIMIT)
 def get_download_info(
+    request: Request,
     app_key: str,
     platform: str = Query("android", pattern="^(android|ios)$"),
 ):

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from postgrest.exceptions import APIError
@@ -8,9 +8,12 @@ from slowapi.errors import RateLimitExceeded
 from app.api.v1 import announcements, apps, auth, downloads, logs, notifications, releases, updates
 from app.core.config import get_settings
 from app.core.limiter import limiter
+from app.core.security import SecurityHeadersMiddleware
 from app.templates.download_page import DOWNLOAD_PAGE_HTML
 
 settings = get_settings()
+
+_enable_docs = settings.DOCS_ENABLED and settings.ENVIRONMENT.lower() != "production"
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -20,20 +23,25 @@ app = FastAPI(
         "See /api/v1/updates/check for the public version-check endpoint "
         "used by client apps."
     ),
-    docs_url="/docs" if settings.DOCS_ENABLED else None,
-    redoc_url="/redoc" if settings.DOCS_ENABLED else None,
+    docs_url="/docs" if _enable_docs else None,
+    redoc_url="/redoc" if _enable_docs else None,
 )
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# credentials=True with allow_origins=["*"] is unsafe — only enable when origins are explicit.
+_origins = settings.ALLOWED_ORIGINS
+_allow_credentials = "*" not in _origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_origins,
+    allow_credentials=_allow_credentials,
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 @app.exception_handler(APIError)
