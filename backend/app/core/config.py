@@ -65,9 +65,12 @@ class Settings(BaseSettings):
     PUBLIC_BASE_URL: str = "https://psc-version-control.onrender.com"
     SIGNED_URL_EXPIRE_SECONDS: int = 60 * 30  # 30 minutes
 
-    # --- Email / OTP (Resend) ---
-    RESEND_API_KEY: str | None = None
-    RESEND_FROM_EMAIL: str = "PSC Update Hub <onboarding@resend.dev>"
+    # --- Email / OTP (Gmail API) ---
+    GMAIL_CLIENT_ID: str | None = None
+    GMAIL_CLIENT_SECRET: str | None = None
+    GMAIL_REFRESH_TOKEN: str | None = None
+    # Must be the Gmail account that authorized the OAuth consent (sends as this address)
+    GMAIL_SENDER_EMAIL: str = "pscecosystem@gmail.com"
     OTP_EXPIRE_MINUTES: int = 10
     OTP_LENGTH: int = 6
     OTP_MAX_ATTEMPTS: int = 5
@@ -84,8 +87,16 @@ class Settings(BaseSettings):
                 )
             if not self.SUPABASE_URL or not self.SUPABASE_KEY:
                 raise ValueError("SUPABASE_URL and SUPABASE_KEY are required in production/staging")
-            if not self.RESEND_API_KEY:
-                raise ValueError("RESEND_API_KEY is required in production/staging for OTP login emails")
+            if not (
+                self.GMAIL_CLIENT_ID
+                and self.GMAIL_CLIENT_SECRET
+                and self.GMAIL_REFRESH_TOKEN
+                and self.GMAIL_SENDER_EMAIL
+            ):
+                raise ValueError(
+                    "GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN, and "
+                    "GMAIL_SENDER_EMAIL are required in production/staging for OTP emails"
+                )
             if "*" in self.ALLOWED_ORIGINS:
                 raise ValueError(
                     "ALLOWED_ORIGINS must not include '*' in production/staging. "

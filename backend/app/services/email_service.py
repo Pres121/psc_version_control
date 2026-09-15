@@ -1,52 +1,113 @@
 """
-Outbound email via Resend HTTP API.
-API key must come from RESEND_API_KEY env — never hard-code secrets.
+Outbound email via Gmail API (OAuth2 refresh token).
+Credentials come from env — never hard-code secrets.
 """
 from __future__ import annotations
+
+import base64
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 import httpx
 from fastapi import HTTPException, status
 
 from app.core.config import get_settings
 
+_TOKEN_URL = "https://oauth2.googleapis.com/token"
+_GMAIL_SEND_URL = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send"
 
-def send_email(*, to: str, subject: str, html: str, text: str | None = None) -> None:
-    settings = get_settings()
-    if not settings.RESEND_API_KEY:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Email delivery is not configured (RESEND_API_KEY missing)",
-        )
 
-    payload: dict = {
-        "from": settings.RESEND_FROM_EMAIL,
-        "to": [to],
-        "subject": subject,
-        "html": html,
-    }
-    if text:
-        payload["text"] = text
+def _gmail_configured(settings) -> bool:
+    return bool(
+        settings.GMAIL_CLIENT_ID
+        and settings.GMAIL_CLIENT_SECRET
+        and settings.GMAIL_REFRESH_TOKEN
+        and settings.GMAIL_SENDER_EMAIL
+    )
 
+
+def _access_token(settings) -> str:
     try:
         response = httpx.post(
-            "https://api.resend.com/emails",
-            headers={
-                "Authorization": f"Bearer {settings.RESEND_API_KEY}",
-                "Content-Type": "application/json",
+            _TOKEN_URL,
+            data={
+                "client_id": settings.GMAIL_CLIENT_ID,
+                "client_secret": settings.GMAIL_CLIENT_SECRET,
+                "refresh_token": settings.GMAIL_REFRESH_TOKEN,
+                "grant_type": "refresh_token",
             },
-            json=payload,
             timeout=20.0,
         )
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Failed to reach email provider",
+            detail="Failed to reach Google OAuth token endpoint",
         ) from exc
 
     if response.status_code >= 400:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Failed to send email",
+            detail="Failed to refresh Gmail access token",
+        )
+
+    token = response.json().get("access_token")
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Gmail access token missing from OAuth response",
+        )
+    return token
+
+
+def _build_raw_message(*, to: str, subject: str, html: str, text: str | None, sender: str) -> str:
+    msg = MIMEMultipart("alternative")
+    msg["To"] = to
+    msg["From"] = sender
+    msg["Subject"] = subject
+    if text:
+        msg.attach(MIMEText(text, "plain", "utf-8"))
+    msg.attach(MIMEText(html, "html", "utf-8"))
+    raw = base64.urlsafe_b64encode(msg.as_bytes()).decode("ascii").rstrip("=")
+    return raw
+
+
+def send_email(*, to: str, subject: str, html: str, text: str | None = None) -> None:
+    settings = get_settings()
+    if not _gmail_configured(settings):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Email delivery is not configured (Gmail OAuth env vars missing)",
+        )
+
+    token = _access_token(settings)
+    raw = _build_raw_message(
+        to=to,
+        subject=subject,
+        html=html,
+        text=text,
+        sender=settings.GMAIL_SENDER_EMAIL,
+    )
+
+    try:
+        response = httpx.post(
+            _GMAIL_SEND_URL,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+            json={"raw": raw},
+            timeout=20.0,
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Failed to reach Gmail API",
+        ) from exc
+
+    if response.status_code >= 400:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Failed to send email via Gmail",
         )
 
 
