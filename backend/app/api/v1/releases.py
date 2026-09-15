@@ -7,10 +7,17 @@ from app.database.supabase_client import get_supabase
 from app.schemas.release import (
     ReleaseCreate,
     ReleaseOut,
+    ReleaseUploadCompleteRequest,
+    ReleaseUploadUrlRequest,
+    ReleaseUploadUrlResponse,
     ReleaseVerification,
     VerifiedReleaseUpdate,
 )
-from app.services.storage_service import upload_app_binary
+from app.services.storage_service import (
+    create_direct_upload_plan,
+    finalize_direct_upload,
+    upload_app_binary,
+)
 from app.services.version_service import compare_versions
 
 router = APIRouter(prefix="/releases", tags=["releases"])
@@ -95,19 +102,12 @@ def get_release(release_id: UUID, admin: dict = Depends(get_current_admin)):
     return res.data[0]
 
 
-@router.post("/{release_id}/upload", response_model=ReleaseOut)
-async def upload_release_binary(
-    release_id: UUID,
-    file: UploadFile = File(...),
-    admin: dict = Depends(get_current_admin),
-):
-    """Upload an APK/IPA for this release. Overwrites the app+platform latest build."""
+def _release_with_app(release_id: UUID) -> tuple[dict, dict]:
     supabase = get_supabase()
     release_res = supabase.table("releases").select("*").eq("id", str(release_id)).limit(1).execute()
     if not release_res.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Release not found")
     release = release_res.data[0]
-
     app_res = (
         supabase.table("apps")
         .select("app_key")
@@ -117,9 +117,67 @@ async def upload_release_binary(
     )
     if not app_res.data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Application not found")
+    return release, app_res.data[0]
+
+
+@router.post("/{release_id}/upload-url", response_model=ReleaseUploadUrlResponse)
+def create_release_upload_url(
+    release_id: UUID,
+    payload: ReleaseUploadUrlRequest,
+    admin: dict = Depends(get_current_admin),
+):
+    """Return signed Supabase upload URLs so the browser uploads the binary directly."""
+    release, app = _release_with_app(release_id)
+    return create_direct_upload_plan(
+        app_key=app["app_key"],
+        platform=release["platform"],
+        version=release["version"],
+        build_number=release["build_number"],
+        file_name=payload.file_name,
+        file_size_bytes=payload.file_size_bytes,
+    )
+
+
+@router.post("/{release_id}/upload-complete", response_model=ReleaseOut)
+def complete_release_upload(
+    release_id: UUID,
+    payload: ReleaseUploadCompleteRequest,
+    admin: dict = Depends(get_current_admin),
+):
+    """Persist release file metadata after a successful direct-to-Supabase upload."""
+    release, app = _release_with_app(release_id)
+    finalized = finalize_direct_upload(
+        app_key=app["app_key"],
+        platform=release["platform"],
+        version=release["version"],
+        build_number=release["build_number"],
+        storage_path=payload.storage_path,
+        file_name=payload.file_name,
+        file_size_bytes=payload.file_size_bytes,
+    )
+    updated = (
+        get_supabase()
+        .table("releases")
+        .update(finalized)
+        .eq("id", str(release_id))
+        .execute()
+    )
+    if not updated.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Release not found")
+    return updated.data[0]
+
+
+@router.post("/{release_id}/upload", response_model=ReleaseOut)
+async def upload_release_binary(
+    release_id: UUID,
+    file: UploadFile = File(...),
+    admin: dict = Depends(get_current_admin),
+):
+    """Legacy proxy upload (slow on small hosts). Prefer /upload-url + direct Supabase PUT."""
+    release, app = _release_with_app(release_id)
 
     uploaded = await upload_app_binary(
-        app_key=app_res.data[0]["app_key"],
+        app_key=app["app_key"],
         platform=release["platform"],
         version=release["version"],
         build_number=release["build_number"],
@@ -127,7 +185,8 @@ async def upload_release_binary(
     )
 
     updated = (
-        supabase.table("releases")
+        get_supabase()
+        .table("releases")
         .update(
             {
                 "storage_path": uploaded["storage_path"],

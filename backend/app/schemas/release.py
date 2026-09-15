@@ -70,3 +70,33 @@ class ReleaseOut(ReleaseBase):
 
     class Config:
         from_attributes = True
+
+
+class ReleaseUploadUrlRequest(BaseModel):
+    """Admin asks backend for short-lived Supabase signed upload URLs."""
+
+    file_name: str = Field(..., min_length=1, max_length=255)
+    file_size_bytes: int = Field(..., ge=1, le=524288000)
+
+
+class SignedUploadTarget(BaseModel):
+    path: str
+    token: str
+    signed_url: str
+
+
+class ReleaseUploadUrlResponse(BaseModel):
+    storage_path: str
+    versioned_path: str
+    file_name: str
+    file_size_bytes: int
+    content_type: str
+    uploads: list[SignedUploadTarget]
+
+
+class ReleaseUploadCompleteRequest(BaseModel):
+    """Confirm browser finished direct-to-Supabase upload; persist release metadata."""
+
+    storage_path: str = Field(..., min_length=1, max_length=500)
+    file_name: str = Field(..., min_length=1, max_length=255)
+    file_size_bytes: int = Field(..., ge=1, le=524288000)

@@ -67,10 +67,15 @@ async function loadReleases() {
         const file = input.files && input.files[0];
         if (!file) return;
         try {
-          await Api.uploadReleaseBinary(input.dataset.uploadReleaseId, file);
+          showUploadProgress(0, `Starting ${file.name}…`);
+          await Api.uploadReleaseBinary(input.dataset.uploadReleaseId, file, (percent, label) => {
+            showUploadProgress(percent, label || `Uploading ${file.name}…`);
+          });
+          hideUploadProgress();
           await loadReleases();
           showReleaseMessage("success", `Uploaded ${file.name}. It replaces the previous build for this app/platform.`);
         } catch (err) {
+          hideUploadProgress();
           showReleaseMessage("error", err.message);
         } finally {
           input.value = "";
@@ -213,6 +218,26 @@ function showReleaseMessage(type, message) {
   element.style.display = "block";
 }
 
+function showUploadProgress(percent, label) {
+  const wrap = document.getElementById("upload-progress");
+  const bar = document.getElementById("upload-progress-bar");
+  const labelEl = document.getElementById("upload-progress-label");
+  const percentEl = document.getElementById("upload-progress-percent");
+  if (!wrap || !bar || !labelEl || !percentEl) return;
+  const safe = Math.max(0, Math.min(100, Math.round(Number(percent) || 0)));
+  wrap.hidden = false;
+  bar.style.width = `${safe}%`;
+  labelEl.textContent = label || "Uploading…";
+  percentEl.textContent = `${safe}%`;
+  document.getElementById("success").style.display = "none";
+  document.getElementById("error").style.display = "none";
+}
+
+function hideUploadProgress() {
+  const wrap = document.getElementById("upload-progress");
+  if (wrap) wrap.hidden = true;
+}
+
 function openReleaseAction(action, release) {
   pendingReleaseAction = { action, release };
   const app = appsById[release.application_id];
@@ -301,7 +326,12 @@ document.getElementById("release-action-form").addEventListener("submit", async 
       });
       const uploadInput = document.getElementById("edit_upload_file");
       if (uploadInput?.files?.[0]) {
-        await Api.uploadReleaseBinary(release.id, uploadInput.files[0]);
+        const file = uploadInput.files[0];
+        showUploadProgress(0, `Starting ${file.name}…`);
+        await Api.uploadReleaseBinary(release.id, file, (percent, label) => {
+          showUploadProgress(percent, label || `Uploading ${file.name}…`);
+        });
+        hideUploadProgress();
         uploadInput.value = "";
       }
     } else if (action === "publish") {
@@ -315,6 +345,7 @@ document.getElementById("release-action-form").addEventListener("submit", async 
     await loadReleases();
     showReleaseMessage("success", `Release ${action === "edit" ? "updated" : action === "delete" ? "deleted" : `${action}ed`} successfully.`);
   } catch (err) {
+    hideUploadProgress();
     errorElement.textContent = err.message;
     errorElement.style.display = "block";
   } finally {

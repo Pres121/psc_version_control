@@ -1269,6 +1269,44 @@ button:disabled {
   font-weight: 600;
 }
 
+.upload-progress {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+}
+
+.upload-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+.upload-progress-percent {
+  color: var(--accent, #0d9f6e);
+  font-variant-numeric: tabular-nums;
+}
+
+.upload-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(13, 159, 110, 0.12);
+  overflow: hidden;
+}
+
+.upload-progress-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0d9f6e, #14b87f);
+  transition: width 0.15s ease-out;
+}
+
 /* --- Login --- */
 
 .login-wrap {
