@@ -80,5 +80,5 @@ No backend code changes needed:
 2. Add `psc_update_service` to the new app with its own `app_key`.
 3. Create and publish releases for it from the **Releases** page.
 
-See `docs/ARCHITECTURE.md`, `docs/API.md`, and `docs/NOTIFICATIONS.md`
-for more detail (including Flutter FCM snippets).
+See `docs/TECHNICAL_DOCUMENTATION.md`, `docs/NON_TECHNICAL_OVERVIEW.md`, `docs/ARCHITECTURE.md`, `docs/API.md`, and `docs/NOTIFICATIONS.md`
+for more detail (including Flutter FCM snippets and architecture details).

@@ -1,5 +1,8 @@
 # Architecture
 
+> [!NOTE]
+> For the comprehensive, formal Technical Team Documentation including Flutter app connectivity, microservice data flows, database schemas, and threat models, see [`TECHNICAL_DOCUMENTATION.md`](file:///c:/Users/user/Desktop/Personal_Projetcs/psc_version_control/docs/TECHNICAL_DOCUMENTATION.md).
+
 ## Overview
 
 ```
